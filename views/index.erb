@@ -1,0 +1,71 @@
+<script type="text/x-handlebars">
+  <div class="row">
+    <div class="span12 ">
+      <h1>Order</h1>
+      <hr>
+      <p>{{outlet}}</p>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-handlebars" id="tables">
+  <div class="row">
+    <div id="tables" class="span4">
+      {{ partial 'tableMenu' }}
+    </div>
+    <div id="order" class="span7">
+      {{outlet}}
+    </div>
+  </div>
+</script>
+
+<script type="text/x-handlebars" id="tables/index">
+  <h2>Please select a table</h2>
+</script>
+
+<script type="text/x-handlebars" id="table">
+  <div class="span2 menu">
+    {{render 'food'}}
+  </div>
+  <div class="span4">
+    <div class="span4 table">
+      <h2>Table <span>{{id}}</span></h2>
+      {{ render "tab" tab }}
+    </div>
+  </div>
+</script>
+
+<script type="text/x-handlebars" id="tab">
+  <ul id="customer-tab">
+    {{#each tabItem in tabItems}}
+    <li><h3>{{tabItem.food.name}} <span>${{money tabItem.food.cents}}</span></h3></li>
+    {{else}}
+    <li><h3>Please select a food item.</h3></li>
+    {{/each}}
+    <li id="total"><h3>Total <span>${{money cents}}</span></h3></li>
+  </ul>
+</script>
+
+<script type="text/x-handlebars" id="food">
+  <ul id="menu">
+  {{!--controller--}}
+    {{#each food in controller}}
+      <li>
+        <a href="#" {{ action "addFood" food }}>
+        <img {{ bindAttr src="food.imageUrl"}}>
+        <p>{{food.name}}</p>
+        </a>
+      </li>
+    {{/each}}
+  </ul>
+</script>
+
+<script type="text/x-handlebars" id="_tableMenu">
+  <h2>TABLES</h2>
+  <hr>
+  <div id="tables-error"></div>
+  {{!--controller--}}
+  {{#each table in controller}}
+    {{#linkTo "table" table class="panel six span6"}}{{table.id}}{{/linkTo}}
+  {{/each}}  
+</script>

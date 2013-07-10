@@ -1,0 +1,205 @@
+require 'fileutils'
+  
+namespace :ember do
+
+  desc "Setup New Ember Environment"
+  task :setup do
+    setup_ember
+  end
+
+  desc "Clean up"
+  task :clean do
+    `rm -rf app.rb config.ru public views`
+  end
+end
+
+# Links to other Ember builds can be found at: http://builds.emberjs.com
+
+EMBER_LATEST            = "ember-latest.js"
+EMBER_DATA_LATEST       = "ember-data-latest.js"
+EMBER_BUILD_URL         = "http://builds.emberjs.com.s3.amazonaws.com"
+NORMALIZE_CSS_URL       = "http://necolas.github.com/normalize.css/2.1.2/normalize.css"
+BOOTSTRAP_ZIP_URL       = "http://twitter.github.io/bootstrap/assets/bootstrap.zip"
+JQUERY_1_10_URL         = "http://code.jquery.com/jquery-1.10.1.js"
+HANDLEBARS_1_0_0_JS_URL = "https://raw.github.com/wycats/handlebars.js/1.0.0/dist/handlebars.js"
+MOMENT_JS_URL           = "https://raw.github.com/timrwood/moment/2.0.0/moment.js"
+SHOWDOWN_JS_URL         = "https://raw.github.com/coreyti/showdown/master/src/showdown.js"
+
+def create_directories
+  FileUtils.mkdir_p 'views'
+  FileUtils.mkdir_p 'public/js/libs'
+  FileUtils.mkdir_p 'public/css'
+end
+
+def wget_js_libs(url)
+  `(cd public/js/libs; wget #{url})`
+end
+
+def wget_css(url)
+  `(cd public/css; wget #{url})`
+end
+
+def wget_latest(file)
+  `wget #{EMBER_BUILD_URL}/#{file}`
+end
+
+def get_ember_latest_move_and_rename(ember)
+  name = File.open(ember) { |f| f.readline }.strip
+  if /Version/ =~ name
+    #// Version: v1.0.0-rc.3-226-gd97b553
+    ext = name.match(/([^\s]*$)/)[1]
+  elsif /Last\scommit/ =~ name
+    #// Last commit: dfeb9e6 (2013-05-14 03:17:52 -0700)
+    ext = name.match(/Last\scommit:\s+([^\s]+)/)[1]
+  end
+  filename = "#{File.basename(ember, '.js')}-#{ext}.js"
+  FileUtils.mv ember, "public/js/libs/#{filename}"
+  filename
+end
+
+def unzip(file)
+  `(cd #{File.dirname(file)}; unzip #{File.basename(file)})`
+end
+
+def setup_bootstrap_css
+  unzip 'public/css/bootstrap.zip'
+  FileUtils.mv('public/css/bootstrap/css/bootstrap.css', 'public/css')
+end
+
+def build_sinatra_app
+   app = <<EOA
+require 'sinatra'
+require "sinatra/reloader"
+require 'json'
+require 'pp'
+
+register Sinatra::Reloader
+
+get '/' do
+  erb :index
+end
+EOA
+  File.open("app.rb", "w+") { |f| f.puts app }
+end
+
+def build_sinatra_config
+  config = %{
+require './app'
+run Sinatra::Application
+}
+  File.open("config.ru", "w+") { |f| f.puts config }
+end
+
+def setup_sinatra
+  build_sinatra_app
+  build_sinatra_config
+end
+
+def build_index_erb
+  index = <<EOT
+<script type="text/x-handlebars">
+  Success: You are running Ember!
+  {{outlet}}
+</script>
+EOT
+  File.open("views/index.erb", "w+") { |f| f.puts index }
+end
+
+def build_layout_erb(ember_js_file, ember_data_js_file)
+  layout = <<EOT
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+<meta charset="utf-8">
+<title>Ember Starter Kit</title>
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <%= yield %>
+  <script src="js/libs/jquery-1.10.1.js"></script>
+  <script src="js/libs/handlebars.js"></script>
+  <script src="js/libs/#{ember_js_file}"></script>
+  <!-- <script src="js/libs/#{ember_data_js_file}"></script> -->
+  <!-- <script src="js/libs/moment.js"></script> -->
+  <!-- <script src="js/libs/showdown.js"></script> -->
+  <script src="js/app.js"></script>
+</body>
+</html>
+EOT
+  File.open("views/layout.erb", "w+") { |f| f.puts layout }
+end
+
+def build_views(ember_js_file, ember_data_js_file)
+  build_index_erb
+  build_layout_erb(ember_js_file, ember_data_js_file)
+end
+
+def build_app_js
+  app = <<EOT
+App = Ember.Application.create({
+    LOG_BINDINGS                  : true,
+    LOG_TRANSITIONS               : true,
+    LOG_TRANSITIONS_INTERNAL      : true, // Feel free to turn this off 
+    LOG_VIEW_LOOKUPS              : true,
+    LOG_ACTIVE_GENERATION         : true,
+    LOG_STACKTRACE_ON_DEPRECATION : true 
+});
+
+App.Router.reopen({
+  // location: 'history'
+});
+EOT
+  File.open("public/js/app.js", "w+") { |f| f.puts app }
+end
+
+def build_style_css
+  style = <<EOT
+/* Put your CSS here */
+html, body {
+  margin: 20px;
+}
+
+.navbar .nav > li > a.active {
+  color: black;
+  font-weight: bold;
+}
+EOT
+  File.open("public/css/style.css", "w+") { |f| f.puts style }
+end
+
+def setup_ember
+  create_directories
+
+  wget_css NORMALIZE_CSS_URL
+  wget_css BOOTSTRAP_ZIP_URL
+
+  wget_js_libs JQUERY_1_10_URL
+  wget_js_libs HANDLEBARS_1_0_0_JS_URL
+  wget_js_libs MOMENT_JS_URL
+  wget_js_libs SHOWDOWN_JS_URL
+
+  wget_latest EMBER_LATEST
+  wget_latest EMBER_DATA_LATEST
+
+  ember_file      = get_ember_latest_move_and_rename(EMBER_LATEST)
+  ember_data_file = get_ember_latest_move_and_rename(EMBER_DATA_LATEST)
+
+  setup_bootstrap_css
+  setup_sinatra
+  build_views ember_file, ember_data_file
+  build_app_js
+  build_style_css
+
+  puts "-"*30
+  puts
+  puts "If you are starting with a clean slate, do the following to complete the setup:"
+
+  puts "1) gem install sinatra-reloader and thin (if needed)"
+  puts "2) Run the sinatra server with: thin start"
+
+  puts "Have fun."
+  puts
+end
+

@@ -1,0 +1,99 @@
+/* Put your CSS here */
+html, body {
+  margin: 20px;
+}
+
+.navbar .nav > li > a.active {
+  color: black;
+  font-weight: bold;
+}
+
+.x4, .x5, .x3 {
+  border: 1px solid #999;
+}
+#tables-error {
+  color: red;
+}
+
+.active {
+  background-color: #444;
+  color: white;
+}
+
+#tables a {
+  font-weight: bold;
+  font-size: 2.5em;
+  text-align: center;
+  display: inline;
+  float: left;
+  padding: 1em 0.25em;
+  width: 130px;
+  margin: 0;
+  background-color: #eee;
+}
+
+#tables {
+  border-right: 1px dashed #999;  
+}
+
+#tables .active:hover, #tables .active, h2 span  {
+  background-color: #333;
+  color: white;
+}
+
+h2 span {
+  padding: 0.5em 0.75em;
+}
+
+.table {
+  height: 500px;
+}
+
+.menu {
+  margin: 0;
+}
+ul#menu {
+  margin-left: 0;
+}
+ul#menu li {
+  list-style-type: none;
+  text-align: center;
+  padding-bottom: 1em;
+}
+ul#menu li div {
+  font-size: 64px;
+  line-height: 64px;
+}
+ul#menu li p {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+#customer-tab {
+  background-color: #f2f2f2;
+  border: 1px solid #e6e6e6;
+  padding: .5em 1em;
+}
+#customer-tab li {
+  list-style-type: none;
+  border-bottom: 1px solid #ccc;
+}
+#customer-tab li#total h3 {
+  font-weight: bold;
+}
+#customer-tab li#total {
+  border-top: 4px solid black;
+  border-bottom: 0;
+}
+#customer-tab li h3 {
+  font-weight: normal;
+}
+#customer-tab li span {
+  float: right;
+}
+#order {
+  border-left: 1px dashed #333;
+}
+#order h2 {
+  text-align: center;
+}
