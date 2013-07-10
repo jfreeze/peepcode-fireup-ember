@@ -23,5 +23,5 @@ The included images and portions of the CSS were provided in the original Peepco
 
 I have no affiliations wtih Peepcode.
 
-You may get the Peepcode video here: [peepcode.com/products/emberjs][https://peepcode.com/products/emberjs]
+You may get the Peepcode video here: [https://peepcode.com/products/emberjs]
 
